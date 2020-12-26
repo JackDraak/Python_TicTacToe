@@ -37,10 +37,10 @@ def play_game():
             player = "X"
         make_a_play(player, this_grid)
         game_status = check_for_win(this_grid)
-        game_over = game_status[0]
         if game_status[1] != "A":
             print("The Winner is: " + game_status[1])
             display(this_grid)
+        game_over = game_status[0]
 
 
 def make_a_play(player, game_board):
@@ -95,7 +95,18 @@ def check_for_win(grid):
 
     # TODO: check diagonals, for both "X" and "O"
 
-    # TODO: check if all cells have been played
+    # if there is no vertical, horizontal, or diagonal winner: check for stalemate
+    if not game_over:
+        cell_count = 0
+        for x in range(3):
+            for y in range(3):
+                if grid[x][y].isdigit():
+                    cell_count += 1
+                    break
+        if cell_count == 0:
+            game_over = True
+            winner = "stalemate"
+
     return game_over, winner, threat_x, warn_x, threat_o, warn_o
 
 
