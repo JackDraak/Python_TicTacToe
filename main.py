@@ -4,7 +4,6 @@
 
 
 def check_for_win(grid):
-    game_over = False
     winner = ""
     # TODO: implement threats and warns so the computer can be the opponent
     threat_x = 0
@@ -16,18 +15,17 @@ def check_for_win(grid):
     # scan rows
     for x in range(3):
         if count("X", grid[x]) == 3:
-            game_over = True
             winner = "X"
-        if count("O", grid[x]) == 3:
-            game_over = True
-            winner = "O"
-        if count("X", grid[x]) == 2:
+        elif count("X", grid[x]) == 2:
             threat_x = x
-        if count("O", grid[x]) == 2:
-            threat_o = x
-        if count("X", grid[x]) == 1:
+        elif count("X", grid[x]) == 1:
             warn_x = x
-        if count("O", grid[x]) == 1:
+
+        if count("O", grid[x]) == 3:
+            winner = "O"
+        elif count("O", grid[x]) == 2:
+            threat_o = x
+        elif count("O", grid[x]) == 1:
             warn_o = x
 
         # scan columns
@@ -36,18 +34,17 @@ def check_for_win(grid):
             col.append(grid[y][x])
 
         if count("X", col) == 3:
-            game_over = True
             winner = "X"
-        if count("O", col) == 3:
-            game_over = True
-            winner = "O"
-        if count("X", col) == 2:
+        elif count("X", col) == 2:
             threat_x = x
-        if count("O", col) == 2:
-            threat_o = x
-        if count("X", col) == 1:
+        elif count("X", col) == 1:
             warn_x = x
-        if count("O", col) == 1:
+
+        if count("O", col) == 3:
+            winner = "O"
+        elif count("O", col) == 2:
+            threat_o = x
+        elif count("O", col) == 1:
             warn_o = x
 
     # TODO: check diagonals for threats and warns
@@ -57,21 +54,18 @@ def check_for_win(grid):
         down.append(grid[i][i])
         up.append(grid[abs(i - 2)][i])
 
-    if count("X", down) == 3:
-        game_over = True
-        winner = "X"
-    if count("O", down) == 3:
-        game_over = True
-        winner = "O"
     if count("X", up) == 3:
-        game_over = True
         winner = "X"
+    elif count("X", down) == 3:
+        winner = "X"
+
     if count("O", up) == 3:
-        game_over = True
+        winner = "O"
+    elif count("O", down) == 3:
         winner = "O"
 
     # Finally, if there is no vertical, horizontal, or diagonal winner: check for stalemate
-    if not game_over:
+    if winner == "":
         cell_count = 0
         for x in range(3):
             for y in range(3):
@@ -79,14 +73,9 @@ def check_for_win(grid):
                     cell_count += 1
                     break
         if cell_count == 0:
-            game_over = True
             winner = "stalemate"
 
-    # so far, 'winner' is really the only thing here we truly (some refactoring involved) need to return; threat and
-    # warn system has not yet been fully thought-out, and may be entirely re-worked from it's current layout, but...
-    # for now it does something semi-useful. Review again once computer opponent is working, and consider refactoring
-    # potential
-    return game_over, winner, threat_x, warn_x, threat_o, warn_o
+    return winner, threat_x, warn_x, threat_o, warn_o
 
 
 def count(this, array):
@@ -118,18 +107,18 @@ def init_grid():
     ]
 
 
-def make_a_play(player, game_board):
+def make_a_play(player, grid):
     valid_play = False
     while not valid_play:
-        display(game_board)
+        display(grid)
         this_play = input("Player, " + player + "'s turn. Please enter the number of the cell you would like to play: ")
         if this_play.isdigit():
             cell = int(this_play)
             if 0 < cell < 10:
                 for row in range(3):
                     for column in range(3):
-                        if game_board[row][column] == str(cell):
-                            game_board[row][column] = player
+                        if grid[row][column] == str(cell):
+                            grid[row][column] = player
                             valid_play = True
                 if not valid_play:
                     print("It looks like cell " + str(cell) + " is occupied")
@@ -146,13 +135,21 @@ def play_game():
             player = "O"
         else:
             player = "X"
+
         make_a_play(player, this_grid)
         game_status = check_for_win(this_grid)
-        if game_status[1] != "":
-            print("The Winner is: " + game_status[1])
+        if game_status[0] != "":
+            print("The Winner is: " + game_status[0])
             display(this_grid)
-        game_over = game_status[0]
+            game_over = True
 
 
 if __name__ == '__main__':
-    play_game()
+    play = True
+    while play:
+        print()
+        intention = input("Would you like to play a game of Tic-Tac-Toe? ")
+        if intention[0] == "n" or intention[0] == "N":
+            play = False
+        else:
+            play_game()
