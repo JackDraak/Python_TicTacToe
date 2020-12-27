@@ -7,31 +7,48 @@
 def check_for_win(grid):
     winner = ""
     players = ["X", "O"]
+    winner = check_rows_columns(grid, players, winner)
+    winner = check_diagonals(grid, players, winner)
+    winner = check_stalemate(grid, winner)
+    return winner
 
-    # scan rows
-    for x in range(3):
-        if winner == "":
-            winner = check_set_for_win(grid[x], players)
 
-        # scan columns
-        col = []
-        for y in range(3):
-            col.append(grid[y][x])
-        if winner == "":
-            winner = check_set_for_win(col, players)
-
-    # scan diagonals
+def check_diagonals(grid, players, winner):
     down = []
     up = []
     for i in range(3):
         down.append(grid[i][i])
         up.append(grid[abs(i - 2)][i])
+
     if winner == "":
         winner = check_set_for_win(up, players)
     if winner == "":
         winner = check_set_for_win(down, players)
+    return winner
 
-    # Finally, if there is no vertical, horizontal, or diagonal winner: check for stalemate
+
+def check_rows_columns(grid, players, winner):
+    for x in range(3):
+        col = []
+        for y in range(3):
+            col.append(grid[y][x])
+
+        if winner == "":
+            winner = check_set_for_win(grid[x], players)
+        if winner == "":
+            winner = check_set_for_win(col, players)
+    return winner
+
+
+def check_set_for_win(col, players):
+    winner = ""
+    for player in players:
+        if count(player, col) == 3:
+            winner = player
+    return winner
+
+
+def check_stalemate(grid, winner):
     if winner == "":
         open_cells = 0
         for x in range(3):
@@ -41,14 +58,6 @@ def check_for_win(grid):
                     break
         if open_cells == 0:
             winner = "stalemate"
-    return winner
-
-
-def check_set_for_win(col, players):
-    winner = ""
-    for player in players:
-        if count(player, col) == 3:
-            winner = player
     return winner
 
 
