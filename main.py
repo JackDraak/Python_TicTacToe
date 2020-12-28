@@ -3,7 +3,6 @@
 # Jack Draak 2020
 
 
-# TODO: implement threats and warns so the computer can be the opponent
 def check_for_win(grid):
     winner = ""
     players = ["X", "O"]
@@ -50,13 +49,7 @@ def check_set_for_win(col, players):
 
 def check_stalemate(grid, winner):
     if winner == "":
-        open_cells = 0
-        for x in range(3):
-            for y in range(3):
-                if grid[x][y].isdigit():
-                    open_cells += 1
-                    break
-        if open_cells == 0:
+        if len(grid[3]) == 0:
             winner = "stalemate"
     return winner
 
@@ -87,6 +80,7 @@ def init_grid():
         ["1", "2", "3"],
         ["4", "5", "6"],
         ["7", "8", "9"],
+        ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
     ]
 
 
@@ -121,13 +115,15 @@ def take_turn(player, grid):
         if this_play.isdigit():
             cell = int(this_play)
             if 0 < cell < 10:
-                for row in range(3):
-                    for column in range(3):
-                        if grid[row][column] == str(cell):
-                            grid[row][column] = player
-                            valid_play = True
-                if not valid_play:
-                    print("It looks like cell " + str(cell) + " is occupied")
+                if grid[3].__contains__(str(cell)):
+                    grid[3].remove(str(cell))
+                    for row in range(3):
+                        for column in range(3):
+                            if grid[row][column] == str(cell):
+                                grid[row][column] = player
+                                valid_play = True
+                    if not valid_play:
+                        print("It looks like cell " + str(cell) + " is occupied")
 
 
 if __name__ == '__main__':
@@ -135,7 +131,7 @@ if __name__ == '__main__':
     while play:
         print()
         intention = input("Would you like to play a game of Tic-Tac-Toe? ")
-        if intention[0] == "n" or intention[0] == "N":
+        if intention[0].lower() == "n":
             play = False
         else:
             play_game()
