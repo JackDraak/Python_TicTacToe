@@ -73,28 +73,34 @@ def display(game):
         if x != grid_size - 1:
             print()
             print("\t", end="")
-            print("-" * (6 * grid_size))
+            if grid_size <= 4:
+                print("-" * (5 * grid_size))
+            elif grid_size <= 7:
+                print("-" * (6 * grid_size))
+            else:
+                print("-" * (7 * grid_size))
+
     print()
 
 
-def init_game():
+def init_game(size):
     grid = []
     cell = 1
-    for x in range(1, grid_size + 1):
+    for x in range(1, size + 1):
         row = []
-        for y in range(1, grid_size + 1):
+        for y in range(1, size + 1):
             row.append(str(cell))
             cell += 1
         grid.append(row)
     row = []
-    for z in range(1, grid_size * grid_size + 1):
+    for z in range(1, size * size + 1):
         row.append(str(z))
     grid.append(row)
     return grid
 
 
 def play_game():
-    game = init_game()
+    game = init_game(grid_size)
     game_over = False
     while game_over is not True:
         player = player_for(turn_number(game))
@@ -138,7 +144,7 @@ def turn_number(game):
 
 
 if __name__ == '__main__':
-    grid_size = 3  # Ostensibly, allow for games on boards sized 5x5, 7x7, etc...
+    grid_size = 3  # Ostensibly, allow for games on grids of any size
     play = True
     while play:
         print()
