@@ -15,9 +15,9 @@ def check_for_win(game):
 def check_diagonals(game, players, winner):
     down = []
     up = []
-    for i in range(3):
+    for i in range(grid_size):
         down.append(game[i][i])
-        up.append(game[abs(i - 2)][i])
+        up.append(game[abs(i - grid_size + 1)][i])
 
     if winner == "":
         winner = check_set_for_win(up, players)
@@ -27,10 +27,10 @@ def check_diagonals(game, players, winner):
 
 
 def check_rows_columns(game, players, winner):
-    for x in range(3):
+    for x in range(grid_size):
         horizontal = game[x]
         vertical = []
-        for y in range(3):
+        for y in range(grid_size):
             vertical.append(game[y][x])
 
         if winner == "":
@@ -43,14 +43,14 @@ def check_rows_columns(game, players, winner):
 def check_set_for_win(this_set, players):
     winner = ""
     for player in players:
-        if count(player, this_set) == 3:
+        if count(player, this_set) == grid_size:
             winner = player
     return winner
 
 
 def check_stalemate(game, winner):
     if winner == "":
-        if len(game[3]) == 0:
+        if len(game[grid_size]) == 0:
             winner = "stalemate"
     return winner
 
@@ -64,25 +64,33 @@ def count(this, array):
 
 
 def display(game):
-    for x in range(3):
+    for x in range(grid_size):
         print("\t", end="")
-        for y in range(3):
+        for y in range(grid_size):
             print(game[x][y], end=" ")
-            if y != 2:
+            if y != grid_size - 1:
                 print(" | ", end=" ")
-        if x != 2:
+        if x != grid_size - 1:
             print()
-            print("\t--------------")
+            print("\t", end="")
+            print("-" * (6 * grid_size))
     print()
 
 
 def init_game():
-    return [
-        ["1", "2", "3"],
-        ["4", "5", "6"],
-        ["7", "8", "9"],
-        ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
-    ]
+    grid = []
+    cell = 1
+    for x in range(1, grid_size + 1):
+        row = []
+        for y in range(1, grid_size + 1):
+            row.append(str(cell))
+            cell += 1
+        grid.append(row)
+    row = []
+    for z in range(1, grid_size * grid_size + 1):
+        row.append(str(z))
+    grid.append(row)
+    return grid
 
 
 def play_game():
@@ -113,11 +121,11 @@ def user_turn(player, game):
         this_play = input("Player, " + player + "'s turn. Please enter the number of the cell to claim: ")
         if this_play.isdigit():
             cell = int(this_play)
-            if 0 < cell < 10:
-                if game[3].__contains__(str(cell)):
-                    game[3].remove(str(cell))
-                    for row in range(3):
-                        for column in range(3):
+            if 0 < cell < grid_size * grid_size + 1:
+                if game[grid_size].__contains__(str(cell)):
+                    game[grid_size].remove(str(cell))
+                    for row in range(grid_size):
+                        for column in range(grid_size):
                             if game[row][column] == str(cell):
                                 game[row][column] = player
                                 valid_play = True
@@ -126,10 +134,11 @@ def user_turn(player, game):
 
 
 def turn_number(game):
-    return 10 - len(game[3])
+    return (grid_size * grid_size + 1) - len(game[grid_size])
 
 
 if __name__ == '__main__':
+    grid_size = 3  # Ostensibly, allow for games on boards sized 5x5, 7x7, etc...
     play = True
     while play:
         print()
