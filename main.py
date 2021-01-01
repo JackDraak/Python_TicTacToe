@@ -99,7 +99,28 @@ def init_game(size):
     return grid
 
 
-def play_game():
+def play_one_player():
+    game = init_game(grid_size)
+    game_over = False
+    while game_over is not True:
+        player = player_for(turn_number(game))
+        user_turn(player, game)
+        winner = check_for_win(game)
+        if winner != "":
+            print("The winner is: " + winner)
+            display(game)
+            game_over = True
+        else:
+            player = player_for(turn_number(game))
+            synth_turn(player, game)
+            winner = check_for_win(game)
+            if winner != "":
+                print("The winner is: " + winner)
+                display(game)
+                game_over = True
+
+
+def play_two_player():
     game = init_game(grid_size)
     game_over = False
     while game_over is not True:
@@ -139,6 +160,26 @@ def user_turn(player, game):
                     print("It looks like cell " + str(cell) + " is occupied")
 
 
+# TODO: complete synth_turn, presently just a functional copy of user_turn
+def synth_turn(player, game):
+    valid_play = False
+    while not valid_play:
+        display(game)
+        this_play = input("[Computer] Player, " + player + "'s turn. ")
+        if this_play.isdigit():
+            cell = int(this_play)
+            if 0 < cell < grid_size * grid_size + 1:
+                if game[grid_size].__contains__(str(cell)):
+                    game[grid_size].remove(str(cell))
+                    for row in range(grid_size):
+                        for column in range(grid_size):
+                            if game[row][column] == str(cell):
+                                game[row][column] = player
+                                valid_play = True
+                else:
+                    print("It looks like cell " + str(cell) + " is occupied")
+
+
 def turn_number(game):
     return (grid_size * grid_size + 1) - len(game[grid_size])
 
@@ -148,8 +189,10 @@ if __name__ == '__main__':
     play = True
     while play:
         print()
-        intention = input("Would you like to play a game of Tic-Tac-Toe? ")
-        if intention[0].lower() == "n":
+        intention = input("Would you like to play a two-player game of Tic-Tac-Toe? [<2>, 1, y(es), n(o)] ")
+        if intention == "" or intention[0].lower() == "y" or intention[0] == "2":
             play = False
-        else:
-            play_game()
+            play_two_player()
+        elif intention[0].lower() == "n" or intention[0] == "1":
+            play = False
+            play_one_player()
