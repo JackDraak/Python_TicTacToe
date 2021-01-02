@@ -2,6 +2,15 @@
 # the classic children's game
 # Jack Draak 2020
 
+import random
+
+
+def check_cell(cell, game):
+    if game[grid_size].__contains__(str(cell)):
+        return True
+    else:
+        return False
+
 
 def check_for_win(game):
     winner = ""
@@ -55,6 +64,22 @@ def check_stalemate(game, winner):
     return winner
 
 
+def claim_cell(game, player, this_play, valid_play):
+    if this_play.isdigit():
+        cell = int(this_play)
+        if 0 < cell < grid_size * grid_size + 1:
+            if game[grid_size].__contains__(str(cell)):
+                game[grid_size].remove(str(cell))
+                for row in range(grid_size):
+                    for column in range(grid_size):
+                        if game[row][column] == str(cell):
+                            game[row][column] = player
+                            valid_play = True
+            else:
+                print("It looks like cell " + str(cell) + " is occupied")
+    return valid_play, game
+
+
 def count(this, array):
     this_count = 0
     for item in array:
@@ -79,8 +104,15 @@ def display(game):
                 print("-" * (6 * grid_size))
             else:
                 print("-" * (7 * grid_size))
-
     print()
+
+
+def find_threat():
+    return "find threat"
+
+
+def find_warn():
+    return "find warn"
 
 
 def init_game(size):
@@ -142,42 +174,36 @@ def player_for(turn):
 
 
 def user_turn(player, game):
+    print("user turn")
     valid_play = False
     while not valid_play:
         display(game)
         this_play = input("Player, " + player + "'s turn. Please enter the number of the cell to claim: ")
-        if this_play.isdigit():
-            cell = int(this_play)
-            if 0 < cell < grid_size * grid_size + 1:
-                if game[grid_size].__contains__(str(cell)):
-                    game[grid_size].remove(str(cell))
-                    for row in range(grid_size):
-                        for column in range(grid_size):
-                            if game[row][column] == str(cell):
-                                game[row][column] = player
-                                valid_play = True
-                else:
-                    print("It looks like cell " + str(cell) + " is occupied")
+        valid_play, game = claim_cell(game, player, this_play, valid_play)
 
 
 # TODO: complete synth_turn, presently just a functional copy of user_turn
 def synth_turn(player, game):
-    valid_play = False
-    while not valid_play:
-        display(game)
-        this_play = input("[Computer] Player, " + player + "'s turn. ")
-        if this_play.isdigit():
-            cell = int(this_play)
-            if 0 < cell < grid_size * grid_size + 1:
-                if game[grid_size].__contains__(str(cell)):
-                    game[grid_size].remove(str(cell))
-                    for row in range(grid_size):
-                        for column in range(grid_size):
-                            if game[row][column] == str(cell):
-                                game[row][column] = player
-                                valid_play = True
-                else:
-                    print("It looks like cell " + str(cell) + " is occupied")
+    print("synth turn")
+    winner = ""
+    winner = check_stalemate(game, winner)
+    if winner != "":
+        moved = False
+        cell = find_threat(player)
+        if cell is not None:
+            moved = True
+            valid = False
+            valid, game = claim_cell(game, player, cell, valid)
+        else:
+            cell = find_warn(player)
+            if cell is not None:
+                moved = True
+                valid = False
+            valid, game = claim_cell(game, player, cell, valid)
+        if not moved:
+            cell = game[grid_size][random.randint(len(game[grid_size]))]
+            valid, game = claim_cell(game, player, cell, valid)
+    display(game)
 
 
 def turn_number(game):
@@ -186,13 +212,10 @@ def turn_number(game):
 
 if __name__ == '__main__':
     grid_size = 3  # Ostensibly, allow for games on grids of any size
-    play = True
-    while play:
+    while True:
         print()
         intention = input("Would you like to play a two-player game of Tic-Tac-Toe? [<2>, 1, y(es), n(o)] ")
         if intention == "" or intention[0].lower() == "y" or intention[0] == "2":
-            play = False
             play_two_player()
         elif intention[0].lower() == "n" or intention[0] == "1":
-            play = False
             play_one_player()
