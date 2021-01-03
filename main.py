@@ -5,6 +5,21 @@
 import random
 
 
+class Cell:
+    def __init__(self, identity):
+        self.id = identity
+        self.val = identity
+
+    def set_value(self, value):
+        self.val = value
+
+d = Cell(3)
+print(d.val)
+d.val = 2
+print(d.val)
+print(d.id)
+
+
 def check_cell(cell, game):
     if game[grid_size].__contains__(str(cell)):
         return True
@@ -27,7 +42,6 @@ def check_diagonals(game, players, winner):
     for i in range(grid_size):
         down.append(game[i][i])
         up.append(game[abs(i - grid_size + 1)][i])
-
     if winner == "":
         winner = check_set_for_win(up, players)
     if winner == "":
@@ -41,7 +55,6 @@ def check_rows_columns(game, players, winner):
         vertical = []
         for y in range(grid_size):
             vertical.append(game[y][x])
-
         if winner == "":
             winner = check_set_for_win(horizontal, players)
         if winner == "":
@@ -68,7 +81,7 @@ def claim_cell(game, player, this_play, valid_play):
     if this_play.isdigit():
         cell = int(this_play)
         if 0 < cell < grid_size * grid_size + 1:
-            if game[grid_size].__contains__(str(cell)):
+            if check_cell(this_play, game):
                 game[grid_size].remove(str(cell))
                 for row in range(grid_size):
                     for column in range(grid_size):
@@ -107,12 +120,41 @@ def display(game):
     print()
 
 
-def find_threat():
-    return "find threat"
+def find_threat(player, game):
+    if player == "X":
+        opponent = "O"
+    else:
+        opponent = "X"
+    col_threat = 0
+    row_threat = 0
+    up_threat = 0
+    down_threat = 0
+    for x in range(grid_size):
+        horizontal = game[x]
+        if horizontal.count(opponent) == 2:
+            print("threat horizontal " + str(x))
+            col_threat += 1
+        vertical = []
+        for y in range(grid_size):
+            vertical.append(game[y][x])
+        if vertical.count(opponent) == 2:
+            print("threat vertical " + str(y) + " " + str(x))
+            row_threat += 1
+    down, up = [], []
+    for i in range(grid_size):
+        down.append(game[i][i])
+        up.append(game[abs(i - grid_size + 1)][i])
+    if down.count(opponent) == 2:
+        print("threat down")
+        down_threat += 1
+    if up.count(opponent) == 2:
+        print("threat up")
+        up_threat += 1
+    return "threat"  # TODO finish this
 
 
-def find_warn():
-    return "find warn"
+def find_warn(player, game):
+    return "warn"
 
 
 def init_game(size):
@@ -182,20 +224,20 @@ def user_turn(player, game):
         valid_play, game = claim_cell(game, player, this_play, valid_play)
 
 
-# TODO: complete synth_turn, presently just a functional copy of user_turn
+# TODO: complete synth_turn (find_threat, find_warn)
 def synth_turn(player, game):
     print("synth turn")
     winner = ""
     winner = check_stalemate(game, winner)
     if winner != "":
         moved = False
-        cell = find_threat(player)
+        cell = find_threat(player, game)
         if cell is not None:
             moved = True
             valid = False
             valid, game = claim_cell(game, player, cell, valid)
         else:
-            cell = find_warn(player)
+            cell = find_warn(player, game)
             if cell is not None:
                 moved = True
                 valid = False
