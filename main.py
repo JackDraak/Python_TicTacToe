@@ -2,110 +2,88 @@
 # the classic children's game
 # Jack Draak 2020
 
-import random
-
 
 class Cell:
     def __init__(self, identity):
-        self.id = identity
-        self.val = identity
+        self.id = int(identity)
+        self.val = str(identity)
+        self.claimed = False
 
     def set_value(self, value):
-        self.val = value
-
-d = Cell(3)
-print(d.val)
-d.val = 2
-print(d.val)
-print(d.id)
-
-
-def check_cell(cell, game):
-    if game[grid_size].__contains__(str(cell)):
-        return True
-    else:
+        if not self.claimed:
+            self.val = str(value)
+            self.claimed = True
+            return True
         return False
 
+    def is_claimed(self):
+        return self.claimed
 
-def check_for_win(game):
-    winner = ""
-    players = ["X", "O"]
-    winner = check_rows_columns(game, players, winner)
-    winner = check_diagonals(game, players, winner)
-    winner = check_stalemate(game, winner)
-    return winner
+    def get_id(self):
+        return self.id
 
-
-def check_diagonals(game, players, winner):
-    down = []
-    up = []
-    for i in range(grid_size):
-        down.append(game[i][i])
-        up.append(game[abs(i - grid_size + 1)][i])
-    if winner == "":
-        winner = check_set_for_win(up, players)
-    if winner == "":
-        winner = check_set_for_win(down, players)
-    return winner
+    def get_value(self):
+        return self.val
 
 
-def check_rows_columns(game, players, winner):
+def cell_is_claimed(cell):
     for x in range(grid_size):
-        horizontal = game[x]
+        for y in range(grid_size):
+            if this_game[x][y].is_claimed() and this_game[x][y].get_id() == int(cell):
+                return True
+    return False
+
+
+def check_for_winner():
+    # select diagonals
+    nwse = []
+    swne = []
+    for i in range(grid_size):
+        nwse.append(this_game[i][i])
+        swne.append(this_game[abs(i - grid_size + 1)][i])
+    win_sets = [nwse, swne]
+
+    # select each row and column
+    for x in range(grid_size):
+        horizontal = this_game[x]
         vertical = []
         for y in range(grid_size):
-            vertical.append(game[y][x])
-        if winner == "":
-            winner = check_set_for_win(horizontal, players)
-        if winner == "":
-            winner = check_set_for_win(vertical, players)
-    return winner
+            vertical.append(this_game[y][x])
+        win_sets.append(vertical)
+        win_sets.append(horizontal)
+
+    # interrogate sets until a winner is found
+    for this_set in win_sets:
+        tally_x, tally_o = 0, 0
+        for member in this_set:
+            # print(member.get_value(), end=", ")  # DEBUG: print the winning sets
+            this_value = member.get_value()
+            if this_value == "X":
+                tally_x += 1
+            elif this_value == "O":
+                tally_o += 1
+        # print()  # DEBUG: newline between sets
+        if tally_x == grid_size:
+            return "X"
+        if tally_o == grid_size:
+            return "O"
+    return None
 
 
-def check_set_for_win(this_set, players):
-    winner = ""
-    for player in players:
-        if count(player, this_set) == grid_size:
-            winner = player
-    return winner
-
-
-def check_stalemate(game, winner):
-    if winner == "":
-        if len(game[grid_size]) == 0:
-            winner = "stalemate"
-    return winner
-
-
-def claim_cell(game, player, this_play, valid_play):
-    if this_play.isdigit():
-        cell = int(this_play)
-        if 0 < cell < grid_size * grid_size + 1:
-            if check_cell(this_play, game):
-                game[grid_size].remove(str(cell))
-                for row in range(grid_size):
-                    for column in range(grid_size):
-                        if game[row][column] == str(cell):
-                            game[row][column] = player
-                            valid_play = True
-            else:
-                print("It looks like cell " + str(cell) + " is occupied")
-    return valid_play, game
-
-
-def count(this, array):
-    this_count = 0
-    for item in array:
-        if item == this:
-            this_count += 1
-    return this_count
+def claim_cell(cell, player):
+    for x in range(grid_size):
+        for y in range(grid_size):
+            if not this_game[x][y].is_claimed() and this_game[x][y].get_id() == int(cell):
+                this_game[x][y].set_value(player)
+                return True
+    return False
 
 
 def display(game):
     for x in range(grid_size):
         print("\t", end="")
         for y in range(grid_size):
-            print(game[x][y], end=" ")
+            print(game[x][y].val, end=" ")
             if y != grid_size - 1:
                 print(" | ", end=" ")
         if x != grid_size - 1:
@@ -120,41 +98,34 @@ def display(game):
     print()
 
 
-def find_threat(player, game):
-    if player == "X":
-        opponent = "O"
+def get_play():
+    display(this_game)
+    while True:
+        this_play = input("make a play: ")
+        if this_play.isdigit():
+            cell = int(this_play)
+            if 0 < cell < grid_size * grid_size + 1:
+                if not cell_is_claimed(cell):
+                    return cell
+        print(this_play + " is not a valid play. Please, ", end="")
+
+
+def get_player():
+    if get_turn() % 2 == 0:
+        player = "O"
     else:
-        opponent = "X"
-    col_threat = 0
-    row_threat = 0
-    up_threat = 0
-    down_threat = 0
+        player = "X"
+    return player
+
+
+def get_turn():
+    turn = 1
     for x in range(grid_size):
-        horizontal = game[x]
-        if horizontal.count(opponent) == 2:
-            print("threat horizontal " + str(x))
-            col_threat += 1
-        vertical = []
         for y in range(grid_size):
-            vertical.append(game[y][x])
-        if vertical.count(opponent) == 2:
-            print("threat vertical " + str(y) + " " + str(x))
-            row_threat += 1
-    down, up = [], []
-    for i in range(grid_size):
-        down.append(game[i][i])
-        up.append(game[abs(i - grid_size + 1)][i])
-    if down.count(opponent) == 2:
-        print("threat down")
-        down_threat += 1
-    if up.count(opponent) == 2:
-        print("threat up")
-        up_threat += 1
-    return "threat"  # TODO finish this
-
-
-def find_warn(player, game):
-    return "warn"
+            if this_game[x][y].is_claimed():
+                turn += 1
+    print("Turn number: " + str(turn))
+    return turn
 
 
 def init_game(size):
@@ -163,98 +134,45 @@ def init_game(size):
     for x in range(1, size + 1):
         row = []
         for y in range(1, size + 1):
-            row.append(str(cell))
+            row.append(Cell(cell))
             cell += 1
         grid.append(row)
     row = []
-    for z in range(1, size * size + 1):
-        row.append(str(z))
+    for cell in range(1, size * size + 1):
+        row.append(Cell(cell))
     grid.append(row)
     return grid
 
 
 def play_one_player():
-    game = init_game(grid_size)
-    game_over = False
-    while game_over is not True:
-        player = player_for(turn_number(game))
-        user_turn(player, game)
-        winner = check_for_win(game)
-        if winner != "":
-            print("The winner is: " + winner)
-            display(game)
-            game_over = True
-        else:
-            player = player_for(turn_number(game))
-            synth_turn(player, game)
-            winner = check_for_win(game)
-            if winner != "":
-                print("The winner is: " + winner)
-                display(game)
-                game_over = True
+    print("one player: Work in progress...")
 
 
 def play_two_player():
-    game = init_game(grid_size)
-    game_over = False
-    while game_over is not True:
-        player = player_for(turn_number(game))
-        user_turn(player, game)
-        winner = check_for_win(game)
-        if winner != "":
-            print("The winner is: " + winner)
-            display(game)
-            game_over = True
+    while not stalemate():
+        player = get_player()
+        if claim_cell(get_play(), player):
+            winner = check_for_winner()
+        if winner is not None:
+            print("Game over, " + winner + " won the game.")
+            display(this_game)
+            break
+    if stalemate():
+        print("Game over: stalemate")
 
 
-def player_for(turn):
-    if turn % 2 == 0:
-        player = "O"
-    else:
-        player = "X"
-    return player
-
-
-def user_turn(player, game):
-    print("user turn")
-    valid_play = False
-    while not valid_play:
-        display(game)
-        this_play = input("Player, " + player + "'s turn. Please enter the number of the cell to claim: ")
-        valid_play, game = claim_cell(game, player, this_play, valid_play)
-
-
-# TODO: complete synth_turn (find_threat, find_warn)
-def synth_turn(player, game):
-    print("synth turn")
-    winner = ""
-    winner = check_stalemate(game, winner)
-    if winner != "":
-        moved = False
-        cell = find_threat(player, game)
-        if cell is not None:
-            moved = True
-            valid = False
-            valid, game = claim_cell(game, player, cell, valid)
-        else:
-            cell = find_warn(player, game)
-            if cell is not None:
-                moved = True
-                valid = False
-            valid, game = claim_cell(game, player, cell, valid)
-        if not moved:
-            cell = game[grid_size][random.randint(len(game[grid_size]))]
-            valid, game = claim_cell(game, player, cell, valid)
-    display(game)
-
-
-def turn_number(game):
-    return (grid_size * grid_size + 1) - len(game[grid_size])
+def stalemate():
+    for x in range(grid_size):
+        for y in range(grid_size):
+            if not this_game[x][y].is_claimed():
+                return False
+    return True
 
 
 if __name__ == '__main__':
     grid_size = 3  # Ostensibly, allow for games on grids of any size
     while True:
+        this_game = init_game(grid_size)
         print()
         intention = input("Would you like to play a two-player game of Tic-Tac-Toe? [<2>, 1, y(es), n(o)] ")
         if intention == "" or intention[0].lower() == "y" or intention[0] == "2":
