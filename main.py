@@ -6,14 +6,15 @@ import random
 
 
 class Cell:
-    def __init__(self, identity):
-        self.id = int(identity)
-        self.val = str(identity)
+    def __init__(self, value, row, column):
+        self.value = str(value)
+        self.row = row
+        self.column = column
         self.claimed = False
 
     def set_value(self, value):
         if not self.claimed:
-            self.val = str(value)
+            self.value = str(value)
             self.claimed = True
             return True
         return False
@@ -21,17 +22,17 @@ class Cell:
     def is_claimed(self):
         return self.claimed
 
-    def get_id(self):
-        return self.id
-
     def get_value(self):
-        return self.val
+        return self.value
+
+    def get_position(self):
+        return self.row, self.column
 
 
 def cell_is_claimed(cell):
     for x in range(grid_size):
         for y in range(grid_size):
-            if this_game[x][y].get_id() == cell and this_game[x][y].is_claimed():
+            if this_game[x][y].get_value() == str(cell) and this_game[x][y].is_claimed():
                 return True
     return False
 
@@ -99,7 +100,7 @@ def check_sets(checkset, winner):
 def claim_cell(cell, player):
     for x in range(grid_size):
         for y in range(grid_size):
-            if this_game[x][y].get_id() == cell and not this_game[x][y].is_claimed():
+            if this_game[x][y].get_value() == str(cell) and not this_game[x][y].is_claimed():
                 this_game[x][y].set_value(player)
                 return True
     return False
@@ -109,7 +110,7 @@ def display(game):
     for x in range(grid_size):
         print("\t", end="")
         for y in range(grid_size):
-            print(game[x][y].val, end=" ")
+            print(game[x][y].get_value(), end=" ")
             if y != grid_size - 1:
                 print(" | ", end=" ")
         if x != grid_size - 1:
@@ -170,7 +171,7 @@ def init_game(size):
     for x in range(1, size + 1):
         row = []
         for y in range(1, size + 1):
-            row.append(Cell(cell))
+            row.append(Cell(cell, x, y))
             cell += 1
         grid.append(row)
     return grid
@@ -197,16 +198,17 @@ def play_one_player():
                         display(this_game)
                         break
 
-            o_turn = True
-            while o_turn:
-                a_play = random.randint(1, grid_size * grid_size + 1)
-                if claim_cell(a_play, "O"):
-                    winner, block = check_for_winner()
-                    o_turn = False
-                    if winner != "":
-                        print("Game over, " + winner + " won the game.")
-                        display(this_game)
-                        break
+            else:
+                o_turn = True
+                while o_turn:
+                    a_play = random.randint(1, grid_size * grid_size + 1)
+                    if claim_cell(a_play, "O"):
+                        winner, block = check_for_winner()
+                        o_turn = False
+                        if winner != "":
+                            print("Game over, " + winner + " won the game.")
+                            display(this_game)
+                            break
 
     if stalemate() and winner == "":
         print("Game over: stalemate")
